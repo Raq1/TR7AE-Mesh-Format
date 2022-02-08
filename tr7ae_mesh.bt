@@ -1,0 +1,417 @@
+//------------------------------------------------
+//--- 010 Editor v11.0.1 Binary Template
+//
+//      File: tr7ae_mesh.bt
+//   Authors: Raq, also special thanks to TheIndra & alphaZomega
+//   Version: 1.0
+//   Purpose: Parsing Tomb Raider Legend/Anniversary mesh format
+//  Category: Modding
+// File Mask: .gnc
+//  ID Bytes: 
+//   History: This mesh format is used for the old gen meshes for TR Legend and meshes for TR Anniversary
+//------------------------------------------------
+typedef byte TYPE <read=TYPEread, write=TYPEwrite>;
+    string TYPEread(TYPE type) {
+        switch (type) {
+            case 0: 
+                return "General";
+            case 1: 
+                return "Empty";
+            case 2: 
+                return "Animation";
+            case 3: 
+                return "Pushbuffer_WC";
+            case 4: 
+                return "Pushbuffer";
+            case 5: 
+                return "Texture";
+            case 6: 
+                return "Sound";
+            case 7: 
+                return "DTPData";
+            case 8: 
+                return "Script";
+            case 9: 
+                return "ShaderLib";
+            case 10: 
+                return "CollisionMesh";
+            case 11:
+                return "Num_Section_Types";
+            default: 
+                return "Unknown";  
+        }
+    }
+    void TYPEwrite (TYPE &t, string str) {
+        t = Atoi(str);
+    }
+
+typedef enum <ubyte> {
+  kTypeRigid = 0,
+  kTypeSkinned = 1,
+  kTypeVmoAll = 2,
+  kTypeVmoXYZ = 3,
+  kTypeVmoRGBA = 4,
+  kTypeVmoUV = 5,
+  kTypeBend = 6,
+  kTypeDummy = 0x1E240,
+  kTypeForceDWORD = 0x7FFFFFFF,
+} RenderModelDataFlag;
+
+typedef enum <ushort> {
+  Double_Sided = 0,
+  Single_Sided = 32,
+  See_Through_UNCERTAIN = 2086,
+  See_Through_UNCERTAIN2 = 42,
+  See_Through_UNCERTAIN3 = 38,
+  Transparent_Single_Sided = 2087,
+  Invisible = 65535,
+} Material_Property;
+
+typedef enum <ubyte> {
+  Off = 0,
+  On = 32,
+  Dark_Thing = 60,
+} Alpha;
+
+local uint64 i<hidden=true>;
+local uint64 v<hidden=true>;
+local uint SectionDataSize;
+local uint segmentList;
+local uint weight2;
+local uint null;
+
+null = 235995135;
+
+struct {
+    uint32 magic; // 0x0
+    int32 size; // 0x4
+	        TYPE m_type;
+    byte _bf5; // 0x9
+    uint16 versionID; // 0xa
+    //uint32 packedData;
+    struct {
+        uint32 hasDebugInfo : 1;
+        uint32 resourceType : 7;
+        uint32 numRelocations : 24;        
+    } packedData;
+    uint32 id;
+    uint32 specMask;
+
+struct {
+    struct {
+        uint16 type : 3;
+        uint16 sectionIndexOrType : 13;
+    } typeAndSectionInfo;
+    int16 typeSpecific;
+    uint32 offset <fgcolor=cRed>;
+} Relocations[packedData.numRelocations];
+
+} SectionData <fgcolor=cGreen>;
+
+local uint32 numRelocations = SectionData.packedData.numRelocations;
+Printf("%d\n", numRelocations);
+	SectionDataSize = (numRelocations * 0x8) + 0x18;
+
+
+
+FSeek(SectionDataSize);
+
+    struct {
+
+int version;
+int numSegments;
+int numVirtSegments;
+int segmentList;
+
+struct {
+
+float X;
+float Y;
+float Z;
+float W;
+
+} modelScale;
+
+int numVertices;
+int vertexList;
+int numNormals;
+int normalList;
+int numFaces;
+int faceList;
+int OBSOLETEaniTextures;
+float maxRad;
+float maxRadSq;
+int OBSOLETEstartTextures;
+int OBSOLETEendTextures;
+int AnimatedListInfo;
+int AnimatedInfo;
+int ScrollInfo;
+int TextureStripInfo;
+int envMappedVertices;
+int eyeRefEnvMappedVertices;
+int MaterialVertexColor;
+int SpectralVertexColors;
+int pnShadowFaces;
+int pnShadowEdges;
+int boneMirrorDataOffset;
+int drawgroupCenterOffset;
+int numMarkUps;
+int markUpOffset;
+int numTargets;
+int TargetOffset;
+uint cdcRenderDataID;
+RenderModelDataFlag ModelDataFlag <name="cdcRenderModelData">;
+
+ FSeek(boneMirrorDataOffset + SectionDataSize);
+
+struct {
+
+  uint16 bone1 : 8;
+  uint16 bone2 : 8;
+  uint16 count : 8;
+
+} BoneMirrorData;
+
+ FSeek(drawgroupCenterOffset + SectionDataSize);
+
+struct {
+
+int unknown;
+int unknown2;
+
+} drawGroupCenter;
+
+} MeshHeader <fgcolor=cYellow>;
+
+FSeek(MeshHeader.segmentList + SectionDataSize);
+for (i=0; i<MeshHeader.numSegments; i++);
+
+if (MeshHeader.numSegments > 0) {
+    struct {
+
+		float minXPos;
+		float minZPos;
+		float minYPos;
+        uint minWPos;
+
+		float maxXPos;
+		float maxZPos;
+		float maxYPos;
+        uint maxWPos;
+
+		float pivotXPos;
+		float pivotZPos;
+		float pivotYPos;
+        uint pivotWPos;
+
+        uint flags;
+        int16 FirstVertex <bgcolor=cLtGray>;
+        int16 Lastvertex <bgcolor=cLtGray>;
+		
+        uint boneParent <fgcolor=0xff8080>;
+		uint HInfo;
+
+
+    } Segments[MeshHeader.numSegments] <fgcolor=0xffff00>;	
+}
+
+    struct {
+
+		float minXPos;
+		float minZPos;
+		float minYPos;
+        uint minWPos;
+
+		float maxXPos;
+		float maxZPos;
+		float maxYPos;
+        uint maxWPos;
+
+		float pivotXPos;
+		float pivotZPos;
+		float pivotYPos;
+        uint pivotWPos;
+
+        int flags;
+        int16 FirstVertex;
+        int16 LastVertex;
+        int16 index;
+        int16 weightIndex;
+        float weight;
+
+
+    } VirtSegments[MeshHeader.numVirtSegments] <fgcolor=0x808000>;
+
+for (i=0; i<MeshHeader.numSegments; i++) {
+    if (Segments[i].HInfo > 0) {
+        FSeek(Segments[i].HInfo + SectionDataSize);
+
+struct {
+
+  int numHSpheres;
+  uint32 hsphereList;
+  int numHBoxes;
+  uint32 hboxList;
+  int numHMarkers;
+  uint32 hmarkerList;
+  int numHCapsules;
+  uint32 hcapsuleList;
+
+
+if (numHSpheres > 0) {
+
+struct {
+
+    FSeek(hsphereList + SectionDataSize);
+
+  int16 flags;
+  char id;
+  char rank;
+  uint16 radius;
+  int16 x;
+  int16 y;
+  int16 z;
+  uint radiusSquared;
+  uint16 mass;
+  char buoyancyFactor;
+  char explosionFactor;
+  char iHitMaterialType;
+  char pad;
+  int16 damage;
+
+    } HSphere[numHSpheres];
+}
+
+if (numHBoxes > 0) {
+
+struct {
+
+    FSeek(hboxList + SectionDataSize);
+
+    float widthx;
+    float widthy;
+    float widthz;
+    float widthw;
+    float posx;
+    float posy;
+    float posz;
+    float posw;
+    float quat;
+  int16 flags;
+  char id;
+  char rank;
+  uint16 mass;
+  char buoyancyFactor;
+  char explosionFactor;
+  char iHitMaterialType;
+  char pad;
+  int16 damage;
+
+    } Hbox[numHBoxes];
+}
+
+if (numHMarkers > 0) {
+
+struct {
+
+    FSeek(hmarkerList + SectionDataSize);
+
+  int bone;
+  int index;
+  float px;
+  float py;
+  float pz;
+  float rx;
+  float ry;
+  float rz;
+    } HMarker[numHMarkers];
+}
+
+if (numHCapsules > 0) {
+
+struct {
+
+    FSeek(hcapsuleList + SectionDataSize);
+
+  int16 x;
+  int16 y;
+  int16 z;
+  float quat;
+  int16 flags;
+  char id;
+  char rank;
+  uint16 radius;
+  uint16 length;
+  uint16 mass;
+  char buoyancyFactor;
+  char explosionFactor;
+  char iHitMaterialType;
+  char pad;
+  int16 damage;
+
+    } HCapsule[numHCapsules];
+}
+
+
+        } HInfo <fgcolor=cYellow>;
+    }
+}
+
+ FSeek(MeshHeader.vertexList + SectionDataSize);
+
+struct {
+
+    int16 X;
+    int16 Y;
+    int16 Z;
+    byte nx;
+    byte ny;
+    byte nz;
+    byte pad;
+    int16 bone_ID;
+    int UV <bgcolor=cLtGray>;
+} Vertices[MeshHeader.numVertices]<fgcolor=cGreen>;
+
+FSeek(MeshHeader.faceList + SectionDataSize);
+
+if (MeshHeader.faceList > 0) {
+
+struct {
+
+struct {
+
+  uint16 v0;
+  uint16 v1;
+  uint16 v2;
+
+} Face;
+
+  uint16 sameVertBits;
+} MFace[MeshHeader.numFaces];
+}
+
+FSeek(MeshHeader.TextureStripInfo + SectionDataSize);
+
+struct {
+while (true) {
+struct {
+
+    int16 vertexCount <fgcolor=cBlue>;
+    int16 drawGroup <fgcolor=cBlue>;
+    ubyte tpageid <fgcolor=cBlue>;
+Alpha alpha <name="Alpha", fgcolor=cBlue>;
+Material_Property property <name="Material Property", fgcolor=cBlue>;
+    float sortPush <fgcolor=cBlue>;
+    float scrollOffset <fgcolor=cBlue>;
+    uint nextTexture <fgcolor=cBlue>;
+
+    ushort Faces[vertexCount];
+if ( ReadShort( FTell() ) == -1 ) 
+    FSkip(2);
+
+FSeek(nextTexture + SectionDataSize);
+} Mesh <fgcolor=cRed>;
+if ( ReadShort( FTell() ) == 0 ) 
+    break;
+}
+} TextureStripInfo;
