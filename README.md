@@ -285,7 +285,7 @@ Now I will have to explain something that will probably mess up your brain but i
 
 The bone IDs in the vertices with 2 weights will keep going on from the ones with one weight.
 
-Let's say you have 109 bones. so you'd expect that the last bone ID is 108 (because the bones start from 0). But it's not.
+Let's say you have 109 bones. so you'd expect that the last bone ID is 108 (buffer starts from 0). But it's not.
 
 The last bone ID is the last VirtSegment that you have in your list. So, if you have 109 bones and 114 VirtSegments, the last bone ID will be 222.
 
